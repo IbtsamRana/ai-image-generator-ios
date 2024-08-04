@@ -24,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
   int index = 0;
   @override
   void initState() {
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       if (!user.premium) {
         NavigationService.navigateToScreen(const PremiumScreen());
       }

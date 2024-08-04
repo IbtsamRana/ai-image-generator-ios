@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:imagecreator/src/utils/app_assets.dart';
+import 'package:imagecreator/src/utils/app_constants.dart';
 import 'package:imagecreator/src/utils/app_icons.dart';
 import 'package:imagecreator/src/utils/extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -20,8 +21,13 @@ class PremiumScreen extends StatefulWidget {
 
 class _PremiumScreenState extends State<PremiumScreen> {
   final List<String> features = [
-    "Ai Creation",
-    "BG Remover",
+    "${AppConstants.monthlyImageGenerators} Ai Creation",
+    "${AppConstants.monthlyBGRemover} BG Remover",
+    "Unlock all Canvases"
+  ];
+  final List<String> features2 = [
+    "${AppConstants.yearlyImageGenerators} Ai Creation",
+    "${AppConstants.yearlyBGRemover} BG Remover",
     "Unlock all Canvases"
   ];
   @override
@@ -104,7 +110,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                   fontSize: 25,
                                   fontWeight: FontWeight.bold),
                             ),
-                            for (final data in features)
+                            for (final data in controller.selectProduct!.id == yearly?features2:features)
                               Container(
                                 margin:
                                     EdgeInsets.only(top: context.height * 0.02),
@@ -185,7 +191,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                       ),
                                     ),
                                   ),
-                                  if (data.id == monthly)
+                                  if (data.id == yearly)
                                     Positioned(
                                       top: context.height * 0.01,
                                       right: context.width * 0.15,
@@ -255,7 +261,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                                       ),
                                     ),
                                     if (controller.selectProduct != null &&
-                                        controller.selectProduct!.id == monthly)
+                                        controller.selectProduct!.id == yearly)
                                       const Text(
                                         "3 Days Free Trial",
                                         style: TextStyle(
@@ -315,10 +321,10 @@ class _PremiumScreenState extends State<PremiumScreen> {
   }
 
   String duration(String productid) {
-    if (productid == basic) {
-      return "Weekly";
-    } else if (productid == monthly) {
+    if (productid == monthly) {
       return "Monthly";
+    } else if (productid == yearly) {
+      return "Yearly";
     } else {
       return "";
     }

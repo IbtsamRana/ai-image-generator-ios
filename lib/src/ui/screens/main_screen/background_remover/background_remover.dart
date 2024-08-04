@@ -86,7 +86,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
                             fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
-                      if (!model.isPremium)
+                      // if (!model.isPremium)
                         Container(
                           width: context.width * 0.22,
                           height: context.height * 0.035,
@@ -286,9 +286,7 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
   }
 
   void checkCondition(File file, {required bool premium}) {
-    if (premium) {
-      _removeBackground(file, premium: premium);
-    } else if (chances > 0) {
+    if (chances > 0) {
       _removeBackground(file, premium: premium);
     } else {
       NavigationService.navigateToScreen(const PremiumScreen());
@@ -296,21 +294,25 @@ class _BackgroundRemoverState extends State<BackgroundRemover> {
   }
 
   void _removeBackground(File image, {required bool premium}) async {
+    onLoading();
+
     try {
-      onLoading();
-      final data = await ApiService.removeBackground(image);
-      if (chances > 0 && !premium) {
+      if (chances > 0) {
+
+        final data = await ApiService.removeBackground(image);
+
         storageService.set(AppConstants.backgroundremover, chances - 1);
         setState(() {
           chances = chances - 1;
         });
-      }
-      NavigationService.goBack();
 
-      await NavigationService.navigateToScreen(ResultScreen(
-        url: "",
-        image: data,
-      ));
+        NavigationService.goBack();
+
+        await NavigationService.navigateToScreen(ResultScreen(
+          url: "",
+          image: data,
+        ));
+      }
     } catch (e) {
       NavigationService.goBack();
     }

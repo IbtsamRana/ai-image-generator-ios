@@ -3,6 +3,10 @@ class AppConstants {
   static const String introDone = "InterScreen";
   static const String imageGenerator = "imageGenerator";
   static const String backgroundremover = "backgroundremover";
+  static const num monthlyImageGenerators = 100;
+  static const num yearlyImageGenerators = 300;
+  static const num yearlyBGRemover = 60;
+  static const num monthlyBGRemover = 30;
 }
 
 enum ToolName {
