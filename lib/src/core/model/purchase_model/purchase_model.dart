@@ -33,9 +33,9 @@ class PurchaseModel {
   }
 
   int _extendDays(String id) {
-    if (id == monthly) {
+    if (id == basic) {
       return 7;
-    } else if (id == yearly) {
+    } else if (id == monthly) {
       return 30;
     } else {
       return 0;

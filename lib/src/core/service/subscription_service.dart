@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:imagecreator/src/utils/app_constants.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 
@@ -22,12 +21,12 @@ class InAppModel {
       this.productDetails = const []});
 }
 
+final String basic = Platform.isMacOS
+    ? "com.friends.image.artgenerator.weekly"
+    : "com.friends.image.art.generator.weekly";
 final String monthly = Platform.isMacOS
     ? "com.friends.image.artgenerator.monthly"
     : "com.friends.image.art.generator.monthly";
-final String yearly = Platform.isMacOS
-    ? "com.friends.image.artgenerator.yearly"
-    : "com.friends.image.art.generator.yearly";
 
 class SubscriptionsController extends ValueNotifier<InAppModel> {
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
@@ -60,7 +59,6 @@ class SubscriptionsController extends ValueNotifier<InAppModel> {
     }
 
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
-      print("Received purchase update...");
       if (purchaseDetailsList.isEmpty) {
         if (loading) {
           loading = false;
@@ -72,7 +70,6 @@ class SubscriptionsController extends ValueNotifier<InAppModel> {
     }, onDone: () {
       _subscription?.cancel();
     }, onError: (error) {
-      print("Purchase stream error: $error");
       _subscription?.cancel();
     });
 
@@ -88,7 +85,7 @@ class SubscriptionsController extends ValueNotifier<InAppModel> {
     if (oldpurchases.error == null) {
       final oldPurcaseList = oldpurchases.pastPurchases
           .where((element) =>
-              element.productID == monthly || element.productID == yearly)
+              element.productID == basic || element.productID == monthly)
           .where((element) => element.status == PurchaseStatus.purchased);
 
       if (oldPurcaseList.isNotEmpty) {
@@ -125,7 +122,7 @@ class SubscriptionsController extends ValueNotifier<InAppModel> {
 
     updateProducts(await _getProducts(
       productIds: Set<String>.from(
-        {monthly, yearly},
+        {basic, monthly},
       ),
     ));
   }
@@ -151,62 +148,34 @@ class SubscriptionsController extends ValueNotifier<InAppModel> {
   // }
 
   void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
-    print("Processing purchase update...");
+    // ignore: avoid_function_literals_in_foreach_calls
     purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
-      print("Processing purchase: ${purchaseDetails.productID} with status: ${purchaseDetails.status}");
       switch (purchaseDetails.status) {
-        case PurchaseStatus.pending:
-          print("Purchase is pending for: ${purchaseDetails.productID}");
-          // Handle pending state if needed
-          break;
-        case PurchaseStatus.purchased:
-        case PurchaseStatus.restored:
-          print("Purchase successful: ${purchaseDetails.productID}");
+        case PurchaseStatus.purchased || PurchaseStatus.restored:
           user.setUserData = PurchaseModel(
               productId: purchaseDetails.productID,
               transactionDate: purchaseDetails.transactionDate);
 
-          num imageGeneratorChances = storageService.get(AppConstants.imageGenerator) ?? 0;
-          num imageBGRemoverChances = storageService.get(AppConstants.backgroundremover) ?? 0;
-          if(purchaseDetails.productID == monthly){
-            storageService.set(AppConstants.imageGenerator, imageGeneratorChances + AppConstants.monthlyImageGenerators);
-            storageService.set(AppConstants.backgroundremover, imageBGRemoverChances + AppConstants.monthlyBGRemover);
-          } else if(purchaseDetails.productID == yearly) {
-            storageService.set(AppConstants.imageGenerator, imageGeneratorChances + AppConstants.yearlyImageGenerators);
-            storageService.set(AppConstants.backgroundremover, imageBGRemoverChances + AppConstants.yearlyBGRemover);
-          }
-          print("Purchase:: 2 ${imageGeneratorChances}--${imageBGRemoverChances}");
-
           if (loading) {
             loading = false;
             NavigationService.goBack();
-            print("Purchase:: 3 ");
           }
-          print("Purchase:: 4 ");
           NavigationService.replaceScreen(const MainScreen());
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("You are premium now")));
+          // Get.snackbar("You are premium now", "");
           break;
-        case PurchaseStatus.canceled:
-          print("Purchase canceled: ${purchaseDetails.productID}");
-          if (loading) {
-            loading = false;
-            NavigationService.goBack();
-          }
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Purchase was canceled")));
-          break;
+
         case PurchaseStatus.error:
-          print("Purchase error: ${purchaseDetails.error}");
           if (loading) {
             loading = false;
             NavigationService.goBack();
           }
           ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Error Occur while purchasing")));
+          // _handleError(purchaseDetails.error!);
           break;
         default:
-          print("Unhandled purchase status: ${purchaseDetails.status}");
           if (loading) {
             loading = false;
             NavigationService.goBack();
@@ -215,14 +184,10 @@ class SubscriptionsController extends ValueNotifier<InAppModel> {
       }
 
       if (purchaseDetails.pendingCompletePurchase) {
-        print("Purchase:: pending complete ");
         await _inAppPurchase.completePurchase(purchaseDetails);
       }
     });
   }
-
-
-
 
   Future<List<ProductDetails>> _getProducts(
       {required Set<String> productIds}) async {
@@ -274,22 +239,16 @@ class SubscriptionsController extends ValueNotifier<InAppModel> {
     try {
       loading = true;
       onLoading(context);
-      print("subscribe:: product:: ${product.id}");
       final PurchaseParam purchaseParam =
           PurchaseParam(productDetails: product);
-      bool result = await _inAppPurchase.buyNonConsumable(
+      await _inAppPurchase.buyNonConsumable(
         purchaseParam: purchaseParam,
       );
-      if(result){
-        print("subscribe:: RESULT:: ${result}");
-      }
     } catch (e) {
-      print("subscribe:: Error:: ${product.id}");
       if (loading) {
         loading = false;
         NavigationService.goBack();
       }
-
     }
   }
 

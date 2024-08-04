@@ -226,7 +226,7 @@ class _ImageGeneratorState extends State<ImageGenerator> {
                             fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
-                      // if (model.isPremium)
+                      if (!model.isPremium)
                         Container(
                           width: context.width * 0.22,
                           height: context.height * 0.035,
@@ -477,10 +477,9 @@ class _ImageGeneratorState extends State<ImageGenerator> {
                     onTap: () {
                       FocusScope.of(context).unfocus();
                       if (formKey.currentState!.validate()) {
-                        // if (user.premium) {
-                        //   _generateImage(premium: model.isPremium);
-                        // } else
-                          if (chances > 0) {
+                        if (user.premium) {
+                          _generateImage(premium: model.isPremium);
+                        } else if (chances > 0) {
                           _generateImage(premium: model.isPremium);
                         } else {
                           NavigationService.navigateToScreen(
@@ -594,21 +593,17 @@ class _ImageGeneratorState extends State<ImageGenerator> {
     onLoading();
 
     try {
-      if (chances > 0) {
-
-        final data = await ApiService.generateImage(controller.text.trim(),
-            size: sizes, styleSelection: selection);
-
+      final data = await ApiService.generateImage(controller.text.trim(),
+          size: sizes, styleSelection: selection);
+      if (chances > 0 && !premium) {
         storageService.set(AppConstants.imageGenerator, chances - 1);
-
         setState(() {
           chances = chances - 1;
         });
-
-        NavigationService.goBack();
-
-        NavigationService.navigateToScreen(ResultScreen(url: data));
       }
+      NavigationService.goBack();
+
+      NavigationService.navigateToScreen(ResultScreen(url: data));
     } catch (error) {
       NavigationService.goBack();
     }
