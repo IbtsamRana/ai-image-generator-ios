@@ -25,11 +25,12 @@ class UserController extends ValueNotifier<PurchaseModel> {
     // TODO: implement onInit
   }
 
-  checkUser() {
+  Future<void> checkUser() async {
     final String? userString = storageService.get(userKey);
     if (userString != null) {
       final userdata = jsonDecode(userString);
       final PurchaseModel model = PurchaseModel.fromJson(userdata);
+      print("USERDATA:: ${model.toJson()}");
       setUserData = model;
     }
   }

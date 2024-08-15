@@ -22,6 +22,8 @@ void main() async {
   subscriptionsController = SubscriptionsController(InAppModel());
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
+  // await user.checkUser();
+  // print("USERDATA:: ${storageService.get("user")}");
   runApp(const MyApp());
 }
 
